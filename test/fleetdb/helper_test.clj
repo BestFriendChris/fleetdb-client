@@ -55,9 +55,9 @@
 
 (deftest "count"
   (assert= [:count :people]
-           (fleetdb-count :people))
+           (dbcount :people))
   (assert= [:count :people {:where [">" :age 30]}]
-           (fleetdb-count :people
+           (dbcount :people
                           (where (> :age 30)))))
 
 (deftest "insert"
@@ -95,8 +95,8 @@
               [[:count :people {:where ["=" :age 30]}]
                [:count :people {:where ["=" :name "Bob"]}]]]
            (multi-read
-             (fleetdb-count :people (where (= :age 30)))
-             (fleetdb-count :people (where (= :name "Bob"))))))
+             (dbcount :people (where (= :age 30)))
+             (dbcount :people (where (= :name "Bob"))))))
 
 (deftest "multi-write"
   (assert= [:multi-write
@@ -112,7 +112,7 @@
               6
               [:insert :registrations {:id 13 :person-id 2 :event-id 4}]]
            (checked-write
-             (fleetdb-count :registrations (where (= :person-id 2)))
+             (dbcount :registrations (where (= :person-id 2)))
              6
              (insert :registrations {:id 13 :person-id 2 :event-id 4}))))
 

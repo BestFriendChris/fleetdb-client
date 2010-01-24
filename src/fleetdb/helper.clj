@@ -10,7 +10,7 @@
 (defn only [& attr-names]
   (if (= 1 (count attr-names))
     {:only (first attr-names)}
-    {:only (apply vector attr-names)}))
+    {:only (vec attr-names)}))
 
 (defn asc [attr]
   [attr "asc"])
@@ -21,12 +21,21 @@
 (defn order [& attrs]
   (if (= 1 (count attrs))
     {:order (first attrs)}
-    {:order (apply vector attrs)}))
+    {:order (vec attrs)}))
 
 (defmacro where [criteria]
   `{:where (where-criteria ~criteria)})
 
 (defmacro where-criteria [[c & args]]
+  (let [c (str c)]
+    (if (#{"and" "or"} c)
+      `[~c ~@(map #(list 'where-criteria %) args)]
+      `[~c ~@args])))
+
+(defmacro where2 [criteria]
+  `{:where (where-criteria ~criteria)})
+
+(defmacro where2-criteria [[c & args]]
   (let [c (str c)]
     (condp contains? c
       #{"or" "and"}
@@ -49,7 +58,7 @@
   ([collection & find-options]
       [:select collection (join-options find-options)]))
 
-(defn fleetdb-count
+(defn dbcount
   ([collection]
       [:count collection])
   ([collection & find-options]
@@ -58,7 +67,7 @@
 (defn insert [collection & records]
   (if (= 1 (count records))
     [:insert collection (first records)]
-    [:insert collection (apply vector records)]))
+    [:insert collection (vec records)]))
 
 (defn update
   ([collection update-map]
@@ -78,11 +87,11 @@
 (defn drop-index [collection index-spec]
   [:drop-index collection index-spec])
 
-(defmacro multi-read [& queries]
-  `[:multi-read [~@queries]])
+(defn multi-read [& queries]
+  [:multi-read (vec queries)])
 
-(defmacro multi-write [& queries]
-  `[:multi-write [~@queries]])
+(defn multi-write [& queries]
+  [:multi-write (vec queries)])
 
 (defn checked-write [read-query expected-read-result write-query]
   [:checked-write read-query expected-read-result write-query])
