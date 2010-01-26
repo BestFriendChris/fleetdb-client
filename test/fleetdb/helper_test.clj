@@ -8,7 +8,7 @@
 (deftest "select"
   (assert= [:select :people]
            (select :people))
-  (assert= [:select :people {:where ["=" :name "Bob"]}]
+  (assert= [:select :people {:where [:= :name "Bob"]}]
            (select :people (where (= :name "Bob"))))
   (assert= [:select :people {:limit 2 :only [:id :name]}]
            (select :people
@@ -32,39 +32,39 @@
                    (only :name))))
 
 (deftest "possible where criteria"
-  (assert= {:where ["=" :name "Bob"]}
+  (assert= {:where [:= :name "Bob"]}
            (where (= :name "Bob")))
-  (assert= {:where ["!=" :name "Bob"]}
+  (assert= {:where [:!= :name "Bob"]}
            (where (!= :name "Bob")))
-  (assert= {:where ["<" :age 30]}
+  (assert= {:where [:< :age 30]}
            (where (< :age 30)))
-  (assert= {:where ["<=" :age 30]}
+  (assert= {:where [:<= :age 30]}
            (where (<= :age 30)))
-  (assert= {:where [">" :age 30]}
+  (assert= {:where [:> :age 30]}
            (where (> :age 30)))
-  (assert= {:where [">=" :age 30]}
+  (assert= {:where [:>= :age 30]}
            (where (>= :age 30)))
-  (assert= {:where ["in" :name ["Bob" "Amy"]]}
+  (assert= {:where [:in :name ["Bob" "Amy"]]}
            (where (in :name ["Bob" "Amy"])))
-  (assert= {:where ["><" :age [30 40]]}
+  (assert= {:where [:>< :age [30 40]]}
            (where (>< :age [30 40])))
-  (assert= {:where [">=<" :age [30 40]]}
+  (assert= {:where [:>=< :age [30 40]]}
            (where (>=< :age [30 40])))
-  (assert= {:where ["><=" :age [30 40]]}
+  (assert= {:where [:><= :age [30 40]]}
            (where (><= :age [30 40])))
-  (assert= {:where [">=<=" :age [30 40]]}
+  (assert= {:where [:>=<= :age [30 40]]}
            (where (>=<= :age [30 40])))
-  (assert= {:where ["and" ["in" :name ["Bob" "Amy"]] [">=<" :age [30 40]]]}
+  (assert= {:where [:and [:in :name ["Bob" "Amy"]] [:>=< :age [30 40]]]}
            (where (and (in :name ["Bob" "Amy"])
                        (>=< :age [30 40]))))
-  (assert= {:where ["or" ["in" :name ["Bob" "Amy"]] [">=<" :age [30 40]]]}
+  (assert= {:where [:or [:in :name ["Bob" "Amy"]] [:>=< :age [30 40]]]}
            (where (or (in :name ["Bob" "Amy"])
                        (>=< :age [30 40])))))
 
 (deftest "count"
   (assert= [:count :people]
            (dbcount :people))
-  (assert= [:count :people {:where [">" :age 30]}]
+  (assert= [:count :people {:where [:> :age 30]}]
            (dbcount :people
                           (where (> :age 30)))))
 
@@ -77,13 +77,13 @@
                            {:id 2 :name "Amy"})))
 
 (deftest "update"
-  (assert= [:update :people {:vip true} {:where ["=" :name "Bob"]}]
+  (assert= [:update :people {:vip true} {:where [:= :name "Bob"]}]
            (update :people {:vip true} (where (= :name "Bob")))))
 
 (deftest "delete"
   (assert= [:delete :people]
            (delete :people))
-  (assert= [:delete :people {:where ["=" :name "Bob"]}]
+  (assert= [:delete :people {:where [:= :name "Bob"]}]
            (delete :people (where (= :name "Bob")))))
 
 (deftest "create-index"
@@ -100,23 +100,23 @@
 
 (deftest "multi-read"
   (assert= [:multi-read
-              [[:count :people {:where ["=" :age 30]}]
-               [:count :people {:where ["=" :name "Bob"]}]]]
+              [[:count :people {:where [:= :age 30]}]
+               [:count :people {:where [:= :name "Bob"]}]]]
            (multi-read
              (dbcount :people (where (= :age 30)))
              (dbcount :people (where (= :name "Bob"))))))
 
 (deftest "multi-write"
   (assert= [:multi-write
-              [[:select :people {:where ["=" :counted false]}]
-               [:update :people {:counted true} {:where ["=" :counted false]}]]]
+              [[:select :people {:where [:= :counted false]}]
+               [:update :people {:counted true} {:where [:= :counted false]}]]]
            (multi-write
              (select :people (where (= :counted false)))
              (update :people {:counted true} (where (= :counted false))))))
 
 (deftest "checked-write"
   (assert= [:checked-write
-              [:count :registrations {:where ["=" :person-id 2]}]
+              [:count :registrations {:where [:= :person-id 2]}]
               6
               [:insert :registrations {:id 13 :person-id 2 :event-id 4}]]
            (checked-write
@@ -127,7 +127,7 @@
 (deftest "explain"
   (assert= [:explain [:select :people]]
            (explain (select :people)))
-  (assert= [:explain [:select :people {:where ["=" :name "Bob"]
+  (assert= [:explain [:select :people {:where [:= :name "Bob"]
                                        :order [:age "asc"]}]]
            (explain (select :people
                             (where (= :name "Bob"))

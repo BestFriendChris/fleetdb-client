@@ -27,26 +27,19 @@
     {:order (first attrs)}
     {:order (vec attrs)}))
 
+
+(defn where-criteria [[c & args]]
+ (let [c (keyword c)]
+   (condp contains? c
+      #{:and :or}
+          (vec (cons c (map where-criteria args)))
+      #{:= :!= :< :<= :> :>= :in :>< :><= :>=< :>=<=}
+          (vec (cons c args))
+      (throw (Exception. (str "Unknown where criteria '" c "'"))))))
+
 (defmacro where [criteria]
-  `{:where (where-criteria ~criteria)})
-
-(defmacro where-criteria [[c & args]]
-  (let [c (str c)]
-    (if (#{"and" "or"} c)
-      `[~c ~@(map #(list 'where-criteria %) args)]
-      `[~c ~@args])))
-
-(defmacro where2 [criteria]
-  `{:where (where-criteria ~criteria)})
-
-(defmacro where2-criteria [[c & args]]
-  (let [c (str c)]
-    (condp contains? c
-      #{"or" "and"}
-           `[~c ~@(map #(list 'where-criteria %) args)]
-      #{"=" "!=" "<" "<=" ">" ">=" "in" "><" "><=" ">=<" ">=<="}
-           `(vector ~c ~@args)
-      `(throw (Exception. (str "Unknown where criteria '" ~c "'"))))))
+  (let [c (where-criteria criteria)]
+    `{:where ~c}))
 
 (defn join-options [options]
   (into {} options))
